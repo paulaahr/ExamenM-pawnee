@@ -15,12 +15,24 @@ export async function obtener(id: string) {
 export async function crear(body: unknown) {
   return Criatura.create(cuerpo(body, campos, ['nombre','tipo','nivelPeligro']));
 }
+
+
 export async function actualizar(id: string, body: unknown) {
   const cambios = cuerpo(body, campos);
-  const doc = await Criatura.findByIdAndUpdate(idValido(id), { $set: cambios }, { new: true });
-  if (!doc) throw new ApiError(404, 'Criatura no encontrada');
+
+  const doc = await Criatura.findByIdAndUpdate(
+    idValido(id),
+    { $set: cambios },
+    { new: true, runValidators: true }
+  );
+
+  if (!doc) {
+    throw new ApiError(404, 'Criatura no encontrada');
+  }
+
   return doc;
 }
+
 export async function eliminar(id: string) {
   await obtener(id);
   if (await Avistamiento.exists({ criatura: id })) throw new ApiError(409, 'Elimina primero los avistamientos asociados');

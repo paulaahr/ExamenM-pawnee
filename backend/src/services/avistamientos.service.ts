@@ -6,11 +6,16 @@ const campos = ['criatura','testigo','ubicacion','descripcion','fecha'];
 async function comprobarCriatura(id: string) {
   if (!await Criatura.exists({ _id: idValido(id) })) throw new ApiError(404, 'Criatura referenciada no encontrada');
 }
+
 export async function listar(criaturaId?: string) {
   if (criaturaId) await comprobarCriatura(criaturaId);
+
   return Avistamiento.find(criaturaId ? { criatura: criaturaId } : {})
-    .sort({ fecha: -1, _id: -1 }).lean();
+    .populate('criatura', 'nombre')
+    .sort({ fecha: -1, _id: -1 })
+    .lean();
 }
+
 export async function obtener(id: string) {
   const doc = await Avistamiento.findById(idValido(id)).populate('criatura');
   if (!doc) throw new ApiError(404, 'Avistamiento no encontrado');
